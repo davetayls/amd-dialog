@@ -26,14 +26,18 @@ function($, debug){
         isSupported       = !isOldIE && !isSmallScreen,
         $body,
         $container,
-        $externalContent  = $('<div id="dialog" class="mod-dialog-ext" />'),
-        $iframeContent    = $('<div id="dialog" class="mod-dialog-iframe" />'),
+        $externalContent,
+        $iframeContent,
         $loading          = $('<div class="mod-dialog-loading"><h2>Loading...</h2></div>'),
         settings,
         initialised = false,
 
         DEFAULT_OPTIONS = {
-            dialogContentId: 'dialog-content'
+            dialogContentId:   'dialog-content',
+            linkOpenSelector:  'a.dialog',
+            linkCloseSelector: '.dialog-close',
+            iframeWidth:       '100%',
+            iframeHeight:      400
         },
         DIALOG_DEFAULTS = {
             title: '',
@@ -45,10 +49,10 @@ function($, debug){
         }
     ;
 
-    var loadUrl = function (url, callback) {
-        $dialog.load(url + ' #' + settings.dialogContentId, function (data, status) {
+    var loadUrl = function ($wrapper, url, callback) {
+        $wrapper.load(url + ' #' + settings.dialogContentId, function (data, status) {
             if (status === 'success') {
-                $dialog.find('form').each(function () {
+                $wrapper.find('form').each(function () {
                     var actionUrl = $(this).attr('action');
                     $(this).attr('action', module.getActionUrl(actionUrl));
                 });
@@ -61,7 +65,16 @@ function($, debug){
         });
     };
     var initialiseExternalContent = function() {
-        $externalContent.empty();
+        if ($externalContent) {
+            $externalContent.remove();
+        }
+        $externalContent  = $('<div id="dialog" class="mod-dialog-ext" />');
+    };
+    var initialiseIframeContent = function(url, width, height) {
+        if ($iframeContent) {
+            $iframeContent.remove();
+        }
+        $iframeContent  = $('<div id="dialog" class="mod-dialog-iframe"><iframe src="' + url + '" width="' + width + '" height="' + height + '"></iframe></div>');
     };
 
     // define the modules public functions
@@ -74,16 +87,28 @@ function($, debug){
                 $container = $dialogContainer || $body;
                 module.attachEvents($container);
             }
-        },   
+        },
+        dialogTypes: {
+            iframe: function($link, url, options){
+                initialiseIframeContent(url, 
+                    options.iframeWidth, 
+                    options.iframeHeight);
+                this.showDialog($iframeContent, options.dialogOptions);
+            },
+            xhr: function($link, url){
+                module.showUrlInDialog(url);
+            }
+        },
         attachEvents: function($dialogContainer) {
             var self = this;
-            $dialogContainer.delegate('a.dialog', 'click', function (e) {
+            $dialogContainer.delegate(settings.linkOpenSelector, 'click', function (e) {
                 var $this = $(this),
-                href = $this.attr('href');
-                self.showUrlInDialog(href);
+                    href = $this.attr('href'),
+                    dialogType = $this.data('dialogType');
+                self.showDialogType($this, href, dialogType);
                 e.preventDefault();
             });
-            $body.delegate('.dialog-close', 'click', function (e) {
+            $body.delegate(settings.linkCloseSelector, 'click', function (e) {
                 module.closeDialog();
                 e.preventDefault();
             });
@@ -98,6 +123,19 @@ function($, debug){
         hideLoading: function () {
             if ($loading) {
                 $loading.fadeOut(500);
+            }
+        },   
+        showDialogType: function($link, url, dialogType) {
+            var showOptions = $.extend(true, {}, settings, {
+                dialogOptions: {
+                    title: $link.attr('title')
+                }
+            });
+            this.removeDialog();
+            if (dialogType) {
+                this.dialogTypes[dialogType].call(this, $link, url, showOptions);
+            } else {
+                this.dialogTypes.xhr.call(this, $link, url, showOptions);
             }
         },
         showDialog: function($elemToShow, options){
@@ -119,8 +157,9 @@ function($, debug){
         showUrlInDialog: function (url, callback) {
             this.removeDialog();
             initialiseExternalContent();
+            this.showDialog($externalContent);
             this.showLoading();
-            loadUrl(url, callback);
+            loadUrl($externalContent, url, callback);
             return true;
         },
         closeDialog: function () {
