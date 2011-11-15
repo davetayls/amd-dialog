@@ -3,7 +3,7 @@
  * ======
  * Loading and controling the global dialog
  *
- * @version 0.1
+ * @version 0.2
  * @license The MIT License (MIT)
  * @preserve Copyright (c) <2011> <Dave Taylor http://the-taylors.org>
  *
@@ -13,7 +13,7 @@
 define(
 [
     'jquery/core',
-    'debug'
+    'lib/debug'
 ],
 function($, debug){
     'use strict';
@@ -87,6 +87,7 @@ function($, debug){
                 $container = $dialogContainer || $body;
                 module.attachEvents($container);
             }
+            return true;
         },
         dialogTypes: {
             iframe: function($link, url, options){
@@ -119,11 +120,13 @@ function($, debug){
                     .appendTo($dialog.closest('.ui-dialog'));
             }
             $loading.fadeIn(500);
+            return true;
         },
         hideLoading: function () {
             if ($loading) {
                 $loading.fadeOut(500);
             }
+            return this;
         },   
         showDialogType: function($link, url, dialogType) {
             var showOptions = $.extend(true, {}, settings, {
@@ -143,16 +146,19 @@ function($, debug){
 			if ($elemToShow.dialog){
 				$dialog = $elemToShow.dialog($.extend({}, DIALOG_DEFAULTS, options));
 			}
+			return this;
         },
         emptyDialog: function () {
             $dialog.children().remove();
             $dialog.html('');
+            return this;
         },
         removeDialog: function() {
             if ($dialog) {
                 $dialog.remove();
                 $dialog = null;
             }
+            return this;
         },
         showUrlInDialog: function (url, callback) {
             this.removeDialog();
@@ -160,12 +166,12 @@ function($, debug){
             this.showDialog($externalContent);
             this.showLoading();
             loadUrl($externalContent, url, callback);
-            return true;
+            return this;
         },
         closeDialog: function () {
             $dialog.dialog('close');
             this.removeDialog();
-            return true;
+            return this;
         },
         getActionUrl: function (url) {
             return url;
