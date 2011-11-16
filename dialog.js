@@ -87,7 +87,7 @@ function($, debug){
                 $container = $dialogContainer || $body;
                 module.attachEvents($container);
             }
-            return true;
+            return this;
         },
         dialogTypes: {
             iframe: function($link, url, options){
@@ -120,7 +120,7 @@ function($, debug){
                     .appendTo($dialog.closest('.ui-dialog'));
             }
             $loading.fadeIn(500);
-            return true;
+            return this;
         },
         hideLoading: function () {
             if ($loading) {
@@ -145,7 +145,9 @@ function($, debug){
             this.removeDialog();
 			if ($elemToShow.dialog){
 				$dialog = $elemToShow.dialog($.extend({}, DIALOG_DEFAULTS, options));
-			}
+			} else {
+                debug.error('ui dialog not loaded');
+            }
 			return this;
         },
         emptyDialog: function () {
