@@ -3,7 +3,7 @@
  * ======
  * Loading and controling the global dialog
  *
- * @version 0.2
+ * @version 0.3
  * @license The MIT License (MIT)
  * @preserve Copyright (c) <2011> <Dave Taylor http://the-taylors.org>
  *
@@ -31,6 +31,8 @@ function($, debug){
         $loading          = $('<div class="mod-dialog-loading"><h2>Loading...</h2></div>'),
         settings,
         initialised = false,
+
+        DIALOG_OPEN_CLASS = 'dialog-open',
 
         DEFAULT_OPTIONS = {
             dialogContentId:   'dialog-content',
@@ -115,11 +117,11 @@ function($, debug){
             });
         },
         showLoading: function () {
-            if (!$loading) {
+            if ($loading) {
                 $loading.hide()
                     .appendTo($dialog.closest('.ui-dialog'));
+                $loading.fadeIn(500);
             }
-            $loading.fadeIn(500);
             return this;
         },
         hideLoading: function () {
@@ -144,7 +146,9 @@ function($, debug){
         showDialog: function($elemToShow, options){
             this.removeDialog();
 			if ($elemToShow.dialog){
+			    $body.addClass(DIALOG_OPEN_CLASS);
 				$dialog = $elemToShow.dialog($.extend({}, DIALOG_DEFAULTS, options));
+                module.dialogOpened($elemToShow);
 			} else {
                 debug.error('ui dialog not loaded');
             }
@@ -160,6 +164,7 @@ function($, debug){
                 $dialog.remove();
                 $dialog = null;
             }
+			$body.removeClass(DIALOG_OPEN_CLASS);
             return this;
         },
         showUrlInDialog: function (url, callback) {
@@ -171,19 +176,44 @@ function($, debug){
             return this;
         },
         closeDialog: function () {
-            $dialog.dialog('close');
-            this.removeDialog();
+            if ($dialog) {
+                $dialog.dialog('close');
+                this.removeDialog();
+                return this;
+            }
+			$body.removeClass(DIALOG_OPEN_CLASS);
             return this;
+        },
+        centerDialog: function() {
+            if ($dialog) {
+                var height = $dialog.outerHeight(),
+                    scrollHeight = document.body.scrollTop,
+                    wHeight = $(window).height();
+                $dialog.closest('.ui-dialog').css({ 
+                    top: Math.floor((wHeight/2)-(height/2)) + scrollHeight
+                });
+            }
         },
         getActionUrl: function (url) {
             return url;
         },
-        urlLoaded: function (listener) {
+        /*
+        * EVENTS
+        */
+        dialogOpened: function(listener) {
             if (typeof listener === 'function') {
-                $(module).bind('_urlLoaded', listener);
+                $(module).bind('dialog.dialogOpened', listener);
                 return true;
             } else {
-                $(module).trigger('_urlLoaded', arguments);
+                $(module).trigger('dialog.dialogOpened', arguments);
+            }
+        },
+        urlLoaded: function (listener) {
+            if (typeof listener === 'function') {
+                $(module).bind('dialog.urlLoaded', listener);
+                return true;
+            } else {
+                $(module).trigger('dialog.urlLoaded', arguments);
             }
         }
     };
