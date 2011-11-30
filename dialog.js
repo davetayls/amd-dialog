@@ -7,6 +7,43 @@
  * @license The MIT License (MIT)
  * @preserve Copyright (c) <2011> <Dave Taylor http://the-taylors.org>
  *
+ * Dependencies
+ * ----
+ * - AMD Module returning jQuery at jquery/core
+ * - debug Module
+ * - jQuery UI Dialog
+ * - AMD framework like <http://requirejs.org>
+ *
+ * Instructions
+ * ----
+ *
+ * Initialise the module by requiring it and then running init 
+ * require(['dialog'], function(dialog){ 
+ *     dialog.init($container, options); 
+ * });
+ *
+ * Global Options (DEFAULT_OPTIONS in the code)
+ * ----
+ * dialogContentId      {string}    The id of the html element to pull in from an ajax request 
+ * linkOpenSelector     {string}    The selector used to listen for links to open in the dialog
+ * linkCloseSelector    {string}    The selector used to listen for clicks to close the dialog
+ * iframeWidth          {string}|{number} The default width for any external links to open in an iframe 
+ * iframeHeight         {string}|{number} The default height for any external links to open in an iframe
+ *
+ * Opening the dialog
+ * ----
+ * - Clicking any links with the linkOpenSelector class will automatically open the dialog
+ * - You can also open the dialog directly using dialog.showDialog($elemToShow, customUIDialogOptions)
+ * - You can load a url in the dialog using dialog.showUrlInDialog(url, callback)
+ *
+ * ### Catering for Mobile
+ * By default the the dialog will try and open the dialog as normal with some basic positioning
+ * logic to not scroll the site. You also have the option to load the content in to a placeholder
+ * within the page instead (see options above).
+ *
+ * Whenever the dialog is open a `dialog-open` class is added to the body. You can use this to hide
+ * any other elements to give a mobile feel for the dialog.
+ *
  */
 /*jslint browser: true, vars: true, white: true, forin: true */
 /*global define, require */
@@ -18,23 +55,7 @@ define(
 function($, debug){
     'use strict';
 
-
-    var module,           // this will hold the modules public functions
-        isOldIE           = (navigator.appName === "Microsoft Internet Explorer" && (parseFloat(navigator.appVersion.substr(21)) || parseFloat(navigator.appVersion)) < 7),
-        isSmallScreen     = window.screen ? window.screen.width < 700 : false,
-        $dialog,
-        isSupported       = !isOldIE && !isSmallScreen,
-        $body,
-        $container,
-        $externalContent,
-        $iframeContent,
-        $loading          = $('<div class="mod-dialog-loading"><h2>Loading...</h2></div>'),
-        settings,
-        initialised = false,
-
-        DIALOG_OPEN_CLASS = 'dialog-open',
-
-        DEFAULT_OPTIONS = {
+    var DEFAULT_OPTIONS = {
             dialogContentId:   'dialog-content',
             linkOpenSelector:  'a.dialog',
             linkCloseSelector: '.dialog-close',
@@ -51,6 +72,29 @@ function($, debug){
         }
     ;
 
+    var module,           // this will hold the modules public functions
+        isOldIE           = (navigator.appName === "Microsoft Internet Explorer" && (parseFloat(navigator.appVersion.substr(21)) || parseFloat(navigator.appVersion)) < 7),
+        $dialog,
+        isSupported       = !isOldIE,
+        $window           = $(window),
+        $body,
+        $container,
+        $externalContent,
+        $iframeContent,
+        $loading          = $('<div class="mod-dialog-loading"><h2>Loading...</h2></div>'),
+        settings,
+        initialised = false,
+
+        DIALOG_OPEN_CLASS = 'dialog-open'
+
+    ;
+    var isSmallScreen = function(){
+        return $window.width() < 700;
+    };
+
+    /**
+     * Load remote content in to a wrapper
+     */
     var loadUrl = function ($wrapper, url, callback) {
         $wrapper.load(url + ' #' + settings.dialogContentId, function (data, status) {
             if (status === 'success') {
@@ -79,8 +123,19 @@ function($, debug){
         $iframeContent  = $('<div id="dialog" class="mod-dialog-iframe"><iframe src="' + url + '" width="' + width + '" height="' + height + '"></iframe></div>');
     };
 
+    /**
+     * listen for jquery ui dialog close event 
+     */
+     var closed = function(e, ui) {
+         console.log('close');
+         $body.removeClass(DIALOG_OPEN_CLASS);
+     };
+
     // define the modules public functions
     module = {
+        /**
+         * Essential first set up of the global dialog settings 
+         */
         init: function ($dialogContainer, options) {
             if (isSupported && !initialised) {
                 initialised = true;
@@ -91,17 +146,9 @@ function($, debug){
             }
             return this;
         },
-        dialogTypes: {
-            iframe: function($link, url, options){
-                initialiseIframeContent(url, 
-                    options.iframeWidth, 
-                    options.iframeHeight);
-                this.showDialog($iframeContent, options.dialogOptions);
-            },
-            xhr: function($link, url){
-                module.showUrlInDialog(url);
-            }
-        },
+        /**
+         * Attach any events for the dialog functionality
+         */
         attachEvents: function($dialogContainer) {
             var self = this;
             $dialogContainer.delegate(settings.linkOpenSelector, 'click', function (e) {
@@ -116,6 +163,9 @@ function($, debug){
                 e.preventDefault();
             });
         },
+        /**
+         * Loading
+         */
         showLoading: function () {
             if ($loading) {
                 $loading.hide()
@@ -130,6 +180,21 @@ function($, debug){
             }
             return this;
         },   
+
+        /**
+         * Various types of dialog for how to load a url
+         */
+        dialogTypes: {
+            iframe: function($link, url, options){
+                initialiseIframeContent(url, 
+                    options.iframeWidth, 
+                    options.iframeHeight);
+                this.showDialog($iframeContent, options.dialogOptions);
+            },
+            xhr: function($link, url){
+                module.showUrlInDialog(url);
+            }
+        },
         showDialogType: function($link, url, dialogType) {
             var showOptions = $.extend(true, {}, settings, {
                 dialogOptions: {
@@ -143,30 +208,37 @@ function($, debug){
                 this.dialogTypes.xhr.call(this, $link, url, showOptions);
             }
         },
+        getShowDialogOptions: function(options) {
+            var overrides = {};
+            if (isSmallScreen()) {
+                overrides.modal = false;
+            }
+            return $.extend({}, DIALOG_DEFAULTS, options, overrides);
+        },
+
+        /**
+         * Opens the dialog
+         */
         showDialog: function($elemToShow, options){
+            var opened;
             this.removeDialog();
-			if ($elemToShow.dialog){
-			    $body.addClass(DIALOG_OPEN_CLASS);
-				$dialog = $elemToShow.dialog($.extend({}, DIALOG_DEFAULTS, options));
+            if ($elemToShow.dialog){
+                $dialog = $elemToShow.dialog(this.getShowDialogOptions(options));
+                $dialog.bind('dialogclose', closed);
+                opened = true;
+            }
+            if (opened) {
+                $body.addClass(DIALOG_OPEN_CLASS);
                 module.dialogOpened($elemToShow);
-			} else {
+            } else {
                 debug.error('ui dialog not loaded');
             }
 			return this;
         },
-        emptyDialog: function () {
-            $dialog.children().remove();
-            $dialog.html('');
-            return this;
-        },
-        removeDialog: function() {
-            if ($dialog) {
-                $dialog.remove();
-                $dialog = null;
-            }
-			$body.removeClass(DIALOG_OPEN_CLASS);
-            return this;
-        },
+        /**
+         * Opens the dialog, shows loading, requests the url 
+         * via ajax and loads the resutling html in to the dialog
+         */
         showUrlInDialog: function (url, callback) {
             this.removeDialog();
             initialiseExternalContent();
@@ -175,6 +247,21 @@ function($, debug){
             loadUrl($externalContent, url, callback);
             return this;
         },
+
+        /**
+         * Removes the dialog from the DOM
+         */
+        removeDialog: function() {
+            if ($dialog) {
+                $dialog.remove();
+                $dialog = null;
+            }
+			$body.removeClass(DIALOG_OPEN_CLASS);
+            return this;
+        },
+        /**
+         * Hides then removes the dialog from the DOM
+         */
         closeDialog: function () {
             if ($dialog) {
                 $dialog.dialog('close');
@@ -184,8 +271,20 @@ function($, debug){
 			$body.removeClass(DIALOG_OPEN_CLASS);
             return this;
         },
+        /**
+         * Empty the contents of the dialog
+         */
+        emptyDialog: function () {
+            $dialog.children().remove();
+            $dialog.html('');
+            return this;
+        },
         centerDialog: function() {
-            if ($dialog) {
+            if ($dialog && isSmallScreen()) {
+                $dialog.closest('.ui-dialog').css({
+                    top: $(window).scrollTop()
+                });
+            } else if ($dialog) {
                 var height = $dialog.outerHeight(),
                     scrollHeight = document.body.scrollTop,
                     wHeight = $(window).height();
@@ -194,9 +293,14 @@ function($, debug){
                 });
             }
         },
+        /**
+         * Provides the ability to customise any form
+         * action urls when loading via ajax 
+         */
         getActionUrl: function (url) {
             return url;
         },
+
         /*
         * EVENTS
         */
@@ -221,5 +325,6 @@ function($, debug){
     // expose the public module functions
     return module;
 });
+
 
 
