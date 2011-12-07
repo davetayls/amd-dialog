@@ -163,7 +163,12 @@ function($, debug){
                 var $this = $(this),
                     href = $this.attr('href'),
                     dialogType = $this.data('dialogType');
-                self.showDialogType($this, href, dialogType);
+                self.showDialogType(href, dialogType, {
+                    dialogOptions: {
+                        $link: $this,
+                        title: $this.attr('title')
+                    }
+                });
                 e.preventDefault();
             });
             $body.delegate(settings.linkCloseSelector, 'click', function (e) {
@@ -193,35 +198,32 @@ function($, debug){
          * Various types of dialog for how to load a url
          */
         dialogTypes: {
-            iframe: function($link, url, options){
+            iframe: function(url, options){
                 initialiseIframeContent(url, 
                     options.iframeWidth, 
                     options.iframeHeight);
                 this.showDialog($iframeContent, options.dialogOptions);
             },
-            xhr: function($link, url){
+            xhr: function(url){
                 module.showUrlInDialog(url);
             },
-            internal: function($link, selector) {
+            internal: function(selector) {
                 $internalContent = $(selector).before($internalPlaceholder);
                 var $elem = $('<div />');
                 $internalContent.appendTo($elem);
                 module.showDialog($elem);
             }
         },
-        showDialogType: function($link, url, dialogType) {
+        showDialogType: function(url, dialogType, options) {
             this.removeDialog();
-            var showOptions = $.extend(true, {}, settings, {
-                dialogOptions: {
-                    title: $link.attr('title')
-                }
-            });
+            var showOptions = $.extend(true, {}, settings, options);
+
             if (dialogType) {
-                this.dialogTypes[dialogType].call(this, $link, url, showOptions);
+                this.dialogTypes[dialogType].call(this, url, showOptions);
             } else if(url.indexOf('#') > -1) {
-                this.dialogTypes.internal.call(this, $link, url, showOptions);
+                this.dialogTypes.internal.call(this, url, showOptions);
             } else {
-                this.dialogTypes.xhr.call(this, $link, url, showOptions);
+                this.dialogTypes.xhr.call(this, url, showOptions);
             }
         },
         getShowDialogOptions: function(options) {

@@ -23,7 +23,7 @@
     'use strict';
 
 var SPEC_SETTINGS = {
-    name: 'internal loading through links',
+    name: 'showing a dialog from code',
     module: 'dialog'
 };
 describe(SPEC_SETTINGS.name, function(){
@@ -71,7 +71,7 @@ describe(SPEC_SETTINGS.name, function(){
             waitsFor(function(){
                 return $('.ui-dialog #internalContent').length > 0;
             }, 1000);
-            jQuery('#internalContent-link').click();
+            dialog.showDialogType('#internalContent', 'internal');
         });
         it("close the dialog", function() {
             dialog.closeDialog();
@@ -81,7 +81,7 @@ describe(SPEC_SETTINGS.name, function(){
             waitsFor(function(){
                 return $('.ui-dialog #internalContent').length > 0;
             }, 1000);
-            jQuery('#internalContent-link').click();
+            dialog.showDialogType('#internalContent', 'internal');
         });
         it("shouldn't have nested dialogs", function() {
             expect($('.ui-dialog').length).toBe(1);
@@ -95,7 +95,7 @@ describe(SPEC_SETTINGS.name, function(){
         it("hasn't removed the internal content from the DOM", function() {
             expect($('#internalContent').length).toBe(1);
         });
-        it("can then open the internal content again", function() {
+        it("can then open the internal content again from a link", function() {
             waitsFor(function(){
                 return $('.ui-dialog #internalContent').length > 0;
             }, 1000);
@@ -105,4 +105,5 @@ describe(SPEC_SETTINGS.name, function(){
 });
 
 }());
+
 
