@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Jasmine Spec Runner</title>
+  <link rel="stylesheet" href="test.css">
+  <script src="lib/jasmine/jasmine.js"></script>
+  <script src="lib/jasmine/jasmine-html.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+  <script src="../lib/require.js"></script>
+  <script>
+      /*jslint browser: true, evil: true */
+      document.write('<script src="spec/' + location.search.replace('?', '') + '"><\/script>');
+  </script>
+</head>
+<body>
+    <script src="lib/runner.js"></script>
+    <div id="internalContent">
+        <h2>internal content</h2>
+    </div>
+    <div id="markup">
+        <h2>Links</h2>
+        <ul>
+            <li>
+                <a id="external-link" href="testcontent.html" class="dialog">xhr testpage content</a>
+            </li>
+            <li>
+                <a id="internalContent-link" href="#internalContent" class="dialog">internal content</a>
+            </li>
+        </ul>
+    </div>
+    <div id="fb-root"></div>
+    <div id="debug"></div>
+    <script src="http://connect.facebook.net/en_US/all.js" type="text/javascript"></script>
+</body>
+</html>
+

@@ -3,7 +3,7 @@
  * ======
  * Loading and controling the global dialog
  *
- * @version 0.3
+ * @version 0.4
  * @license The MIT License (MIT)
  * @preserve Copyright (c) <2011> <Dave Taylor http://the-taylors.org>
  *
@@ -74,13 +74,15 @@ function($, debug){
 
     var module,           // this will hold the modules public functions
         isOldIE           = (navigator.appName === "Microsoft Internet Explorer" && (parseFloat(navigator.appVersion.substr(21)) || parseFloat(navigator.appVersion)) < 7),
-        $dialog,
         isSupported       = !isOldIE,
+        $dialog,
         $window           = $(window),
         $body,
         $container,
         $externalContent,
         $iframeContent,
+        $internalPlaceholder = $('<div id="dialog-internalPlaceholder" />'),
+        $internalContent,
         $loading          = $('<div class="mod-dialog-loading"><h2>Loading...</h2></div>'),
         settings,
         initialised = false,
@@ -122,12 +124,18 @@ function($, debug){
         }
         $iframeContent  = $('<div id="dialog" class="mod-dialog-iframe"><iframe src="' + url + '" width="' + width + '" height="' + height + '"></iframe></div>');
     };
+    var resetInternalContent = function() {
+        if ($internalContent) {
+            $internalPlaceholder.after($internalContent)
+            .detach();
+            $internalContent = null;
+        }
+    };
 
     /**
      * listen for jquery ui dialog close event 
      */
      var closed = function(e, ui) {
-         console.log('close');
          $body.removeClass(DIALOG_OPEN_CLASS);
      };
 
@@ -193,17 +201,25 @@ function($, debug){
             },
             xhr: function($link, url){
                 module.showUrlInDialog(url);
+            },
+            internal: function($link, selector) {
+                $internalContent = $(selector).before($internalPlaceholder);
+                var $elem = $('<div />');
+                $internalContent.appendTo($elem);
+                module.showDialog($elem);
             }
         },
         showDialogType: function($link, url, dialogType) {
+            this.removeDialog();
             var showOptions = $.extend(true, {}, settings, {
                 dialogOptions: {
                     title: $link.attr('title')
                 }
             });
-            this.removeDialog();
             if (dialogType) {
                 this.dialogTypes[dialogType].call(this, $link, url, showOptions);
+            } else if(url.indexOf('#') > -1) {
+                this.dialogTypes.internal.call(this, $link, url, showOptions);
             } else {
                 this.dialogTypes.xhr.call(this, $link, url, showOptions);
             }
@@ -221,7 +237,6 @@ function($, debug){
          */
         showDialog: function($elemToShow, options){
             var opened;
-            this.removeDialog();
             if ($elemToShow.dialog){
                 $dialog = $elemToShow.dialog(this.getShowDialogOptions(options));
                 $dialog.bind('dialogclose', closed);
@@ -240,7 +255,6 @@ function($, debug){
          * via ajax and loads the resutling html in to the dialog
          */
         showUrlInDialog: function (url, callback) {
-            this.removeDialog();
             initialiseExternalContent();
             this.showDialog($externalContent);
             this.showLoading();
@@ -252,7 +266,9 @@ function($, debug){
          * Removes the dialog from the DOM
          */
         removeDialog: function() {
+            this.closeDialog();
             if ($dialog) {
+                this.emptyDialog();
                 $dialog.remove();
                 $dialog = null;
             }
@@ -260,12 +276,12 @@ function($, debug){
             return this;
         },
         /**
-         * Hides then removes the dialog from the DOM
+         * Hides then optionally removes the dialog from the DOM
+         * @param remove {boolean} also remove the dialog from the DOM
          */
-        closeDialog: function () {
+        closeDialog: function (remove) {
             if ($dialog) {
                 $dialog.dialog('close');
-                this.removeDialog();
                 return this;
             }
 			$body.removeClass(DIALOG_OPEN_CLASS);
@@ -275,6 +291,9 @@ function($, debug){
          * Empty the contents of the dialog
          */
         emptyDialog: function () {
+            if ($internalContent) {
+                resetInternalContent($dialog);
+            }
             $dialog.children().remove();
             $dialog.html('');
             return this;
@@ -325,6 +344,5 @@ function($, debug){
     // expose the public module functions
     return module;
 });
-
 
 

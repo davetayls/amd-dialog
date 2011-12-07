@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Jasmine Spec Runner</title>
+
+  <link rel="stylesheet" href="test.css">
+  <script src="lib/jasmine/jasmine.js"></script>
+  <script src="lib/jasmine/jasmine-html.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
+  <script src="../lib/require.js"></script>
+</head>
+<body>
+  <script>
+      /*jslint white: true, evil: true */
+      var specs = [
+        'xhrSpec.js',
+        'internallinkSpec.js'
+      ];
+      var ln = specs.length, i,
+          itm;
+      for (i = 0; i < ln; i+=1) {
+          itm = specs[i];
+          document.write('<div><a href="runner.html?' + itm + '">' + itm + '<\/a><\/div>');
+          document.write('<iframe src="runner.html?' + itm + '" width="100%" height="200"><\/iframe>');
+      }
+  </script>
+</body>
+</html>
