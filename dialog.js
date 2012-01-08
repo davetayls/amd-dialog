@@ -19,7 +19,7 @@
  *
  * Initialise the module by requiring it and then running init 
  * require(['dialog'], function(dialog){ 
- *     dialog.init($container, options); 
+ *     dialog.init(options); 
  * });
  *
  * Global Options (DEFAULT_OPTIONS in the code)
@@ -61,15 +61,15 @@ function($, debug){
             linkOpenSelector:  'a.dialog',
             linkCloseSelector: '.dialog-close',
             iframeWidth:       '100%',
-            iframeHeight:      400
-        },
-        DIALOG_DEFAULTS = {
-            title: '',
-            closeText: 'Close',
-            draggable: false,
-            modal: true,
-            resizable: false,
-            width: 640
+            iframeHeight:      400,
+            dialogOptions: {
+                title: '',
+                closeText: 'Close',
+                draggable: false,
+                modal: true,
+                resizable: false,
+                width: 640
+            }
         }
     ;
 
@@ -79,7 +79,6 @@ function($, debug){
         $dialog,
         $window           = $(window),
         $body,
-        $container,
         $externalContent,
         $iframeContent,
         $internalPlaceholder = $('<div id="dialog-internalPlaceholder" />'),
@@ -145,13 +144,13 @@ function($, debug){
         /**
          * Essential first set up of the global dialog settings 
          */
-        init: function ($dialogContainer, options) {
+        init: function (options) {
+            if (!$.fn.dialog) { debug.error('jquery dialog needs to have been loaded'); }
             if (isSupported && !initialised) {
                 initialised = true;
+                DEFAULT_OPTIONS.$container = $body = $('body');
                 settings = $.extend({}, DEFAULT_OPTIONS, options);
-                $body = $('body');
-                $container = $dialogContainer || $body;
-                module.attachEvents($container);
+                module.attachEvents(settings.$container);
             }
             return this;
         },
@@ -232,7 +231,7 @@ function($, debug){
             if (isSmallScreen()) {
                 overrides.modal = false;
             }
-            return $.extend({}, DIALOG_DEFAULTS, options, overrides);
+            return $.extend({}, settings.dialogOptions, options, overrides);
         },
 
         /**
@@ -333,6 +332,7 @@ function($, debug){
             } else {
                 $(module).trigger('dialog.dialogOpened', arguments);
             }
+            return this;
         },
         urlLoaded: function (listener) {
             if (typeof listener === 'function') {
@@ -341,6 +341,7 @@ function($, debug){
             } else {
                 $(module).trigger('dialog.urlLoaded', arguments);
             }
+            return this;
         }
     };
 

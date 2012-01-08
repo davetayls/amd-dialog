@@ -1,0 +1,40 @@
+/**
+ * Basic set of the essential styles when 
+ * you don't want to use the full jquery ui 
+ * dialog styles 
+ */
+.ui-dialog { 
+    position: absolute; 
+    overflow: hidden; 
+}
+.ui-dialog .ui-dialog-titlebar { 
+    position: relative;  
+    z-index: 2;
+}
+.ui-dialog .ui-dialog-title { 
+    float: left; 
+} 
+.ui-dialog .ui-dialog-titlebar-close { 
+    position: absolute; 
+    right: 20px; 
+    top: 50%; 
+    width: 19px; 
+    margin: -10px 0 0 0; 
+    padding: 1px; 
+    height: 18px; 
+}
+.ui-dialog .ui-dialog-titlebar-close span { 
+    display: block; 
+}
+.ui-dialog .ui-dialog-titlebar-close:hover, 
+.ui-dialog .ui-dialog-titlebar-close:focus { 
+}
+.ui-dialog .ui-dialog-content { 
+    position: relative; 
+    border: 0; 
+    background: none; 
+    overflow: auto; 
+    zoom: 1; 
+    z-index: 1;
+}
+
