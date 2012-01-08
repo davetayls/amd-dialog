@@ -50,7 +50,8 @@
 define(
 [
     'jquery/core',
-    'lib/debug'
+    'debug',
+    'jquery/ui'
 ],
 function($, debug){
     'use strict';
