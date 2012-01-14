@@ -308,9 +308,10 @@ function($, debug){
             } else if ($dialog) {
                 var height = $dialog.outerHeight(),
                     scrollHeight = document.body.scrollTop,
-                    wHeight = $(window).height();
+                    wHeight = $(window).height(),
+                    top = Math.floor((wHeight/2)-(height/2)) + scrollHeight;
                 $dialog.closest('.ui-dialog').css({ 
-                    top: Math.floor((wHeight/2)-(height/2)) + scrollHeight
+                    top: top < 10 ? 10 : top
                 });
             }
         },
