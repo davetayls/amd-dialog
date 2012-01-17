@@ -1,48 +1,13 @@
 /**
  * Dialog
  * ======
- * Loading and controling the global dialog
+ * Loading and controling a global ui dialog
  *
- * @version 0.4
+ * @version 0.5.0
  * @license The MIT License (MIT)
  * @preserve Copyright (c) <2011> <Dave Taylor http://the-taylors.org>
  *
- * Dependencies
- * ----
- * - AMD Module returning jQuery at jquery/core
- * - debug Module
- * - jQuery UI Dialog
- * - AMD framework like <http://requirejs.org>
- *
- * Instructions
- * ----
- *
- * Initialise the module by requiring it and then running init 
- * require(['dialog'], function(dialog){ 
- *     dialog.init(options); 
- * });
- *
- * Global Options (DEFAULT_OPTIONS in the code)
- * ----
- * dialogContentId      {string}    The id of the html element to pull in from an ajax request 
- * linkOpenSelector     {string}    The selector used to listen for links to open in the dialog
- * linkCloseSelector    {string}    The selector used to listen for clicks to close the dialog
- * iframeWidth          {string}|{number} The default width for any external links to open in an iframe 
- * iframeHeight         {string}|{number} The default height for any external links to open in an iframe
- *
- * Opening the dialog
- * ----
- * - Clicking any links with the linkOpenSelector class will automatically open the dialog
- * - You can also open the dialog directly using dialog.showDialog($elemToShow, customUIDialogOptions)
- * - You can load a url in the dialog using dialog.showUrlInDialog(url, callback)
- *
- * ### Catering for Mobile
- * By default the the dialog will try and open the dialog as normal with some basic positioning
- * logic to not scroll the site. You also have the option to load the content in to a placeholder
- * within the page instead (see options above).
- *
- * Whenever the dialog is open a `dialog-open` class is added to the body. You can use this to hide
- * any other elements to give a mobile feel for the dialog.
+ * Readme on http://github.com/davetayls/amd-dialog
  *
  */
 /*jslint browser: true, vars: true, white: true, forin: true */
@@ -256,9 +221,9 @@ function($, debug){
          * Opens the dialog, shows loading, requests the url 
          * via ajax and loads the resutling html in to the dialog
          */
-        showUrlInDialog: function (url, callback) {
+        showUrlInDialog: function (url, options, callback) {
             initialiseExternalContent();
-            this.showDialog($externalContent);
+            this.showDialog($externalContent, options);
             this.showLoading();
             loadUrl($externalContent, url, callback);
             return this;
