@@ -1,17 +1,17 @@
-/*jslint browser: true, vars: true, white: true, forin: true, nomen: true */
 /*global define,require,jasmineEnv,jasmine */
     // update title with state
-window.testRequireOptions = { 
+window.testRequireOptions = {
     baseUrl: '../',
-    paths: { 
-        jquery: 'lib/jquery-core',
-        lib: 'lib',
+    paths: {
+        jquery: 'lib/jquery-core/core',
+        jqueryui: 'lib/jquery-core/ui',
+        debug: 'lib/debug',
         spec: 'test/spec'
     }
 };
 
 (function($){
-	'use strict';
+    'use strict';
 
     var jasmineEnv = jasmine.getEnv();
     jasmineEnv.updateInterval = 1000;

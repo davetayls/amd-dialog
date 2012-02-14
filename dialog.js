@@ -10,15 +10,14 @@
  * Readme on http://github.com/davetayls/amd-dialog
  *
  */
-/*jslint browser: true, vars: true, white: true, forin: true */
 /*global define, require */
-define(
-[
-    'jquery/core',
-    'debug',
-    'jquery/ui'
-],
-function($, debug){
+(function(root, factory){
+    if (window.define && window.define.amd) {
+        define(['jquery', 'debug', 'jqueryui'], factory);
+    } else {
+        window.dialog = factory(root.jQuery, root.debug);
+    }
+}(this, function($, debug){
     'use strict';
 
     var DEFAULT_OPTIONS = {
@@ -98,7 +97,7 @@ function($, debug){
     };
 
     /**
-     * listen for jquery ui dialog close event 
+     * listen for jquery ui dialog close event
      */
      var closed = function(e, ui) {
          $body.removeClass(DIALOG_OPEN_CLASS);
@@ -107,7 +106,7 @@ function($, debug){
     // define the modules public functions
     module = {
         /**
-         * Essential first set up of the global dialog settings 
+         * Essential first set up of the global dialog settings
          */
         init: function (options) {
             if (!$.fn.dialog) { debug.error('jquery dialog needs to have been loaded'); }
@@ -157,15 +156,15 @@ function($, debug){
                 $loading.fadeOut(500);
             }
             return this;
-        },   
+        },
 
         /**
          * Various types of dialog for how to load a url
          */
         dialogTypes: {
             iframe: function(url, options){
-                initialiseIframeContent(url, 
-                    options.iframeWidth, 
+                initialiseIframeContent(url,
+                    options.iframeWidth,
                     options.iframeHeight);
                 this.showDialog($iframeContent, options.dialogOptions);
             },
@@ -218,7 +217,7 @@ function($, debug){
 			return this;
         },
         /**
-         * Opens the dialog, shows loading, requests the url 
+         * Opens the dialog, shows loading, requests the url
          * via ajax and loads the resutling html in to the dialog
          */
         showUrlInDialog: function (url, options, callback) {
@@ -275,14 +274,14 @@ function($, debug){
                     scrollHeight = document.body.scrollTop,
                     wHeight = $(window).height(),
                     top = Math.floor((wHeight/2)-(height/2)) + scrollHeight;
-                $dialog.closest('.ui-dialog').css({ 
+                $dialog.closest('.ui-dialog').css({
                     top: top < 10 ? 10 : top
                 });
             }
         },
         /**
          * Provides the ability to customise any form
-         * action urls when loading via ajax 
+         * action urls when loading via ajax
          */
         getActionUrl: function (url) {
             return url;
@@ -313,6 +312,5 @@ function($, debug){
 
     // expose the public module functions
     return module;
-});
 
-
+}));

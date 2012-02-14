@@ -17,7 +17,6 @@
     expect(x).toBeGreaterThan(y); passes if x is greater than y
     expect(function(){fn();}).toThrow(e); passes if function fn throws exception e when executed
 */
-/*jslint browser: true, vars: true, white: true, forin: true, plusplus: true, indent: 4 */
 /*global jQuery,define,require,describe,afterEach,beforeEach,expect,it,waitsFor,runs */
 (function(){
     'use strict';
