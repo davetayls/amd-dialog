@@ -182,10 +182,19 @@
             this.removeDialog();
             var showOptions = $.extend(true, {}, settings, options);
 
+            // custom dialog type
             if (dialogType) {
                 this.dialogTypes[dialogType].call(this, url, showOptions);
+
+            // load external link in iframe
+            } else if(/^http/i.test(url) && url.indexOf(location.host) < 0) {
+                this.dialogTypes.iframe.call(this, url, showOptions);
+
+            // bring up internal element
             } else if(url.indexOf('#') > -1) {
                 this.dialogTypes.internal.call(this, url, showOptions);
+
+            // load url using xhr
             } else {
                 this.dialogTypes.xhr.call(this, url, showOptions);
             }
