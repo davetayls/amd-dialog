@@ -26,6 +26,7 @@
             linkCloseSelector: '.dialog-close',
             iframeWidth:       '100%',
             iframeHeight:      400,
+            iframeTemplate: '<iframe src="{{url}}" width="{{width}}" height="{{height}}"></iframe>',
             dialogOptions: {
                 title: '',
                 closeText: 'Close',
@@ -82,11 +83,17 @@
         }
         $externalContent  = $('<div id="dialog" class="mod-dialog-ext" />');
     };
-    var initialiseIframeContent = function(url, width, height) {
+    var initialiseIframeContent = function(url, options) {
+        var iframeHtml = options.iframeTemplate
+            .replace('{{url}}', url)
+            .replace('{{width}}', options.iframeWidth)
+            .replace('{{height}}', options.iframeHeight)
+        ;
         if ($iframeContent) {
             $iframeContent.remove();
         }
-        $iframeContent  = $('<div id="dialog" class="mod-dialog-iframe"><iframe src="' + url + '" width="' + width + '" height="' + height + '"></iframe></div>');
+        $iframeContent  = $('<div id="dialog" class="mod-dialog-iframe"></div>')
+            .append(iframeHtml);
     };
     var resetInternalContent = function() {
         if ($internalContent) {
@@ -163,9 +170,7 @@
          */
         dialogTypes: {
             iframe: function(url, options){
-                initialiseIframeContent(url,
-                    options.iframeWidth,
-                    options.iframeHeight);
+                initialiseIframeContent(url, options);
                 this.showDialog($iframeContent, options.dialogOptions);
             },
             xhr: function(url){
@@ -323,3 +328,4 @@
     return module;
 
 }));
+
