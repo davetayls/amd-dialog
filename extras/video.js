@@ -8,15 +8,7 @@ define(
 		'use strict';
 
 		return {
-			videoTemplate: [
-			'<iframe src="{{url}}"',
-			'width="{{width}}"',
-			'height="{{height}}"',
-			'frameborder="0"',
-			'webkitAllowFullScreen',
-			'mozallowfullscreen',
-			'allowFullScreen></iframe>'].join(' '),
-
+			videoTemplate: '<iframe src="{{url}}" width="{{width}}" height="{{height}}" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>',
 			getVimeoId: function(url) {
 				var matches = /vimeo\.com\/(\d*)/i.exec(url);
 				if (matches.length === 2) {
